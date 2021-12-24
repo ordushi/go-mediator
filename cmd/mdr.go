@@ -22,7 +22,9 @@ func main() {
 	go func() {
 		for {
 			msg := <-a.Subscriber("a")
-			fmt.Println("1: " + msg.LastName)
+			fmt.Println("1: " + msg.Args.LastName)
+			a.Emit(msg.CorrelationId.String(), A{LastName: "Nami"})
+
 		}
 	}()
 	time.Sleep(1 * time.Second)
@@ -30,12 +32,12 @@ func main() {
 	go func() {
 		for {
 			msg := <-b.Subscriber("a")
-			fmt.Println("2: " + msg.Name)
+			fmt.Println("2: " + msg.Args.Name)
 		}
 	}()
 	time.Sleep(1 * time.Second)
 
-	a.Emit("a", A{LastName: "Dushi"})
+	fmt.Println(a.EmitWithResponse("a", A{LastName: "Dushi"}))
 	b.Emit("a", B{Name: "Or"})
 	time.Sleep(3 * time.Second)
 
