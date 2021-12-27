@@ -1,13 +1,12 @@
 package mediator
 
 import (
-	"fmt"
 	"reflect"
 )
 
-type Mediator[T any] struct {
-	action     func(T) interface{}
-	observable *Observable[T]
+type Mediator[T Input, K Output] struct {
+	action     func(T) K
+	observable *Observable[T, K]
 	actionName string
 }
 type IMediator interface {
@@ -15,32 +14,30 @@ type IMediator interface {
 	Forfit()
 }
 
-func (obs *Observable[T]) NewMediator(actionName string, del func(T) interface{}) Mediator[T] {
-	mtr := Mediator[T]{action: del, observable: obs, actionName: actionName}
+func (obs *Observable[T, K]) NewMediator(actionName string, del func(T) K) Mediator[T, K] {
+	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName}
 	return mtr
 
 }
-func (mtr *Mediator[T]) Mediate(msg T) interface{} {
-	var resp chan eventMessage[interface{}]
+func (mtr *Mediator[T, K]) Mediate(msg T) K {
+	var resp chan eventMessage[T, K]
 	go func() {
 		request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
 		resp = mtr.observable.Subscriber(request.CorrelationId.String())
 
 	}()
-	return (<-(resp)).Args
+	return (<-(resp)).response
 
 }
-func (mtr *Mediator[T]) Listener() {
-
+func (mtr *Mediator[T, K]) Listener() {
 	for {
 
 		request := (<-mtr.observable.Subscriber(mtr.actionName))
-		res := mtr.action(request.Args.(T))
-		if res != nil {
-			request.response = res
-			fmt.Println(res)
-			mtr.observable.Emit(mtr.actionName, request.response)
+		res := mtr.action(request.Args)
+		if request.withresponse {
+			mtr.observable.Response(mtr.actionName, res)
 		}
+
 	}
 }
 
