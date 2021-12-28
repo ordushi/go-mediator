@@ -16,15 +16,24 @@ type B struct {
 func main() {
 
 	//	y := B{s: ""}
-	a := mediator.New[A, string]()
+	a := mediator.New[A, (string)]()
 	//b := mediator.New[B]()
-	mtr := a.NewMediator("a", test)
+	mtr := a.NewMediator("test", test)
+	mtr2 := a.NewMediator("test", test2)
+	go mtr2.Listener()
+	time.Sleep(1 * time.Second)
+
 	go mtr.Listener()
-	go mtr.Mediate(A{LastName: "A"})
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
+
+	fmt.Println(mtr.Mediate(A{LastName: "A"}))
 
 }
 func test(tt A) string {
 	fmt.Println("111")
-	return "yay"
+	return "yay1"
+}
+func test2(tt A) string {
+	fmt.Println("222")
+	return "yay2"
 }

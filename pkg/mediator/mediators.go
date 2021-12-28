@@ -20,13 +20,12 @@ func (obs *Observable[T, K]) NewMediator(actionName string, del func(T) K) Media
 
 }
 func (mtr *Mediator[T, K]) Mediate(msg T) K {
-	var resp chan eventMessage[T, K]
-	go func() {
-		request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
-		resp = mtr.observable.Subscriber(request.CorrelationId.String())
+	// go func(resp chan eventMessage[T, K]) {
+	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
+	resp := <-mtr.observable.Subscriber(request.CorrelationId.String())
 
-	}()
-	return (<-(resp)).response
+	// }(resp)
+	return (resp).response
 
 }
 func (mtr *Mediator[T, K]) Listener() {
@@ -35,16 +34,16 @@ func (mtr *Mediator[T, K]) Listener() {
 		request := (<-mtr.observable.Subscriber(mtr.actionName))
 		res := mtr.action(request.Args)
 		if request.withresponse {
-			mtr.observable.Response(mtr.actionName, res)
+			mtr.observable.Response(request.CorrelationId.String(), res)
 		}
 
 	}
 }
 
 func getType(myvar interface{}) string {
-	if tpe := reflect.TypeOf(myvar); tpe.Kind() == reflect.Ptr {
-		return "*" + tpe.Elem().Name()
+	if t := reflect.TypeOf(myvar); t.Kind() == reflect.Ptr {
+		return "*" + t.Elem().Name()
 	} else {
-		return tpe.Name()
+		return t.Name()
 	}
 }

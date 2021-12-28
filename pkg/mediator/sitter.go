@@ -57,5 +57,5 @@ func (b *Observable[T, K]) EmitWithResponse(e string, request T) eventMessage[T,
 	return requestWrp
 }
 func newEventWrapper[T Input, K Output](val T, withresponse bool) eventMessage[T, K] {
-	return eventMessage[T, K]{withresponse: false, Args: val, CorrelationId: uuid.New()}
+	return eventMessage[T, K]{withresponse: withresponse, Args: val, CorrelationId: uuid.New()}
 }
