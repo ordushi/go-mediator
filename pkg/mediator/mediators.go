@@ -42,9 +42,9 @@ func (mtr *Mediator[T, K]) Listener() {
 }
 
 func getType(myvar interface{}) string {
-	if t := reflect.TypeOf(myvar); t.Kind() == reflect.Ptr {
-		return "*" + t.Elem().Name()
+	if tpe := reflect.TypeOf(myvar); tpe.Kind() == reflect.Ptr {
+		return "*" + tpe.Elem().Name()
 	} else {
-		return t.Name()
+		return tpe.Name()
 	}
 }
