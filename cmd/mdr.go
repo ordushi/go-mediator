@@ -7,7 +7,8 @@ import (
 )
 
 type A struct {
-	LastName string
+	FirstName string
+	LastName  string
 }
 type B struct {
 	Name string
@@ -16,24 +17,28 @@ type B struct {
 func main() {
 
 	//	y := B{s: ""}
-	a := mediator.New[A, (string)]()
+	a := mediator.New[A, string]()
 	//b := mediator.New[B]()
 	mtr := a.NewMediator("test", test)
+	time.Sleep(1 * time.Second)
 	mtr2 := a.NewMediator("test", test2)
-	go mtr2.Listener()
-	time.Sleep(1 * time.Second)
+	_ = mtr2
+	// go mtr2.Listener()
 
-	go mtr.Listener()
+	// go mtr.Listener()
 	time.Sleep(1 * time.Second)
+	i := 1
 
-	fmt.Println(mtr.Mediate(A{LastName: "A"}))
+	fmt.Println(
+		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
 
 }
-func test(tt A) string {
-	fmt.Println("111")
-	return "yay1"
+func test(tt *mediator.MediatePayload[A, string]) {
+	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
+	//	tt.Response = "hi?"
 }
-func test2(tt A) string {
-	fmt.Println("222")
-	return "yay2"
+
+func test2(tt *mediator.MediatePayload[A, string]) {
+	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test2")
+	//tt.Response = "hi2?"
 }

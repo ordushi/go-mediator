@@ -32,8 +32,8 @@ func (obs *Observable[T, K]) Handle(ctx context.Context) {
 	log.Printf("deleting: %+v\n", obs)
 
 }
-func (obs *Observable[T, K]) Subscriber(action string) chan eventMessage[T,K] {
-	ch := make(chan eventMessage[T,K])
+func (obs *Observable[T, K]) Subscriber(action string) chan eventMessage[T, K] {
+	ch := make(chan eventMessage[T, K])
 	obs.AddSitter(action, ch)
 	return ch
 
