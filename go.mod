@@ -1,4 +1,4 @@
-module keyless-cache/go-mediator
+module ezkv.io/go-mediator
 
 go 1.18
 

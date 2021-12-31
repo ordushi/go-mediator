@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"keyless-cache/go-mediator/pkg/mediator"
 	"time"
+
+	"ezkv.io/go-mediator/internal/mediator"
 )
 
 type A struct {
