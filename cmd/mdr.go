@@ -7,7 +7,8 @@ import (
 )
 
 type A struct {
-	LastName string
+	FirstName string
+	LastName  string
 }
 type B struct {
 	Name string
@@ -16,29 +17,28 @@ type B struct {
 func main() {
 
 	//	y := B{s: ""}
-	a := mediator.NewObservable[A]()
-	b := mediator.NewObservable[B]()
-
-	go func() {
-		for {
-			msg := <-a.Subscriber("a")
-			fmt.Println("1: " + msg.Args.LastName)
-			a.Emit(msg.CorrelationId.String(), A{LastName: "Nami"})
-
-		}
-	}()
+	a := mediator.New[A, string]()
+	//b := mediator.New[B]()
+	mtr := a.NewMediator("test", test)
 	time.Sleep(1 * time.Second)
+	mtr2 := a.NewMediator("test", test2)
+	_ = mtr2
+	// go mtr2.Listener()
 
-	go func() {
-		for {
-			msg := <-b.Subscriber("a")
-			fmt.Println("2: " + msg.Args.Name)
-		}
-	}()
+	// go mtr.Listener()
 	time.Sleep(1 * time.Second)
+	i := 1
 
-	fmt.Println(a.EmitWithResponse("a", A{LastName: "Dushi"}))
-	b.Emit("a", B{Name: "Or"})
-	time.Sleep(3 * time.Second)
+	fmt.Println(
+		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
 
+}
+func test(tt *mediator.MediatePayload[A, string]) {
+	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
+	//	tt.Response = "hi?"
+}
+
+func test2(tt *mediator.MediatePayload[A, string]) {
+	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test2")
+	//tt.Response = "hi2?"
 }

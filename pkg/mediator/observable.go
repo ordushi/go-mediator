@@ -8,31 +8,33 @@ import (
 	"github.com/google/uuid"
 )
 
-var flavio chan string = make(chan string)
-
-type Observable[T any] struct {
+type Input interface {
+}
+type Output interface {
+}
+type Observable[T Input, K Output] struct {
 	time    time.Time
 	args    T
 	name    string
-	sitters map[string][]chan eventMessage[T]
+	sitters map[string][]chan eventMessage[T, K]
 }
-type eventMessage[T any] struct {
+type eventMessage[T Input, K Output] struct {
 	withresponse  bool
 	CorrelationId uuid.UUID
 	Args          T
+	response      K
 }
 
-func (obs *Observable[T]) Handle(ctx context.Context) {
+func New[T Input, K Output]() Observable[T, K] {
+	return Observable[T, K]{time: time.Now()}
+}
+func (obs *Observable[T, K]) Handle(ctx context.Context) {
 	log.Printf("deleting: %+v\n", obs)
 
 }
-func (obs *Observable[T]) Subscriber(action string) chan eventMessage[T] {
-	ch := make(chan eventMessage[T])
+func (obs *Observable[T, K]) Subscriber(action string) chan eventMessage[T, K] {
+	ch := make(chan eventMessage[T, K])
 	obs.AddSitter(action, ch)
 	return ch
-
-}
-func NewObservable[T any]() Observable[T] {
-	return new[T]()
 
 }
