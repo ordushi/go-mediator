@@ -18,7 +18,6 @@ type B struct {
 func main() {
 
 	//	y := B{s: ""}
-	fmt.Print("k")
 	a := mediator.New[A, string]()
 	//b := mediator.New[B]()
 	mtr := a.NewMediator("test", test)
