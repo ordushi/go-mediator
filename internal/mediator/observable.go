@@ -9,8 +9,10 @@ import (
 )
 
 type Input interface {
+	comparable
 }
 type Output interface {
+	comparable
 }
 type Observable[T Input, K Output] struct {
 	time    time.Time
@@ -37,4 +39,8 @@ func (obs *Observable[T, K]) Subscriber(action string) chan eventMessage[T, K] {
 	obs.AddSitter(action, ch)
 	return ch
 
+}
+func returnZero[T any](s ...T) T {
+	var zero T
+	return zero
 }

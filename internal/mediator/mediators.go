@@ -1,7 +1,10 @@
 package mediator
 
 import (
+	"context"
+	"fmt"
 	"reflect"
+	"time"
 )
 
 type Mediator[T Input, K Output] struct {
@@ -21,23 +24,35 @@ type IMediator interface {
 func (obs *Observable[T, K]) NewMediator(actionName string, del func(*MediatePayload[T, K])) Mediator[T, K] {
 	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName}
 	go mtr.Listener()
+
 	return mtr
 
 }
 
-func (mtr *Mediator[T, K]) Mediate(msg T) K {
+func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 	// go func(resp chan eventMessage[T, K]) {
+	ctx := context.Background()
+	ctx, close := context.WithTimeout(ctx, time.Second*3)
+	defer close()
+
 	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
 	resp := mtr.observable.Subscriber(request.CorrelationId.String())
 
 	// <-resp
 	defer mtr.observable.RemoveSitter(request.CorrelationId.String(), resp)
+	select {
+	case result := (<-resp):
+		res = result.response
 
+	case <-ctx.Done():
+		fmt.Println("ctx timeout")
+	}
 	// }(resp)
-	return (<-resp).response
+	return res
 
 }
 func (mtr *Mediator[T, K]) Listener() {
+	var test K
 	for {
 
 		request := (<-mtr.observable.Subscriber(mtr.actionName))
@@ -46,9 +61,12 @@ func (mtr *Mediator[T, K]) Listener() {
 		mtr.action(&p)
 		res := p.Response
 
-		if request.withresponse {
+		if res != returnZero(test) {
 			mtr.observable.Response(request.CorrelationId.String(), res)
+
 		}
+		// if request.withresponse {
+		// }
 
 	}
 }
