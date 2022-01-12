@@ -65,22 +65,17 @@ func (mtr *Mediator[T, K]) Listener() {
 	var zeroValue K
 	for {
 		select {
-
 		case <-mtr.cancelationToken:
 			{
 				fmt.Println("Canceled")
-				break
+				return
 			}
 		default:
 			{
-				fmt.Println("live")
-
 				request := (<-mtr.observable.Subscriber(mtr.actionName))
 				p := MediatePayload[T, K]{Payload: request.Args}
-
 				mtr.action(&p)
 				res := p.Response
-
 				if res != returnZero(zeroValue) {
 					mtr.observable.Response(request.CorrelationId.String(), res)
 				}

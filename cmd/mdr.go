@@ -32,7 +32,7 @@ func main() {
 }
 func test(tt *mediator.MediatePayload[A, string]) {
 	//fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
-	tt.Response = "hi?"
+	//	tt.Response = "hi?"
 }
 
 func test2(tt *mediator.MediatePayload[A, string]) {
