@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"ezkv.io/go-mediator/internal/mediator"
 )
@@ -21,17 +20,13 @@ func main() {
 	a := mediator.New[A, string]()
 	//b := mediator.New[B]()
 	mtr := a.NewMediator("test", test)
-	time.Sleep(1 * time.Second)
-	//mtr2 := a.NewMediator("test", test2)
-	//_ = mtr2
-	// go mtr2.Listener()
-
-	// go mtr.Listener()
-	time.Sleep(1 * time.Second)
 	i := 1
-
+	mtr.Stop()
 	fmt.Println(
 		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
+	fmt.Println(
+		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
+
 	//time.Sleep(5 * time.Second)
 
 }
