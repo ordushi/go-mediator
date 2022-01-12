@@ -33,26 +33,25 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 	// go func(resp chan eventMessage[T, K]) {
 	ctx := context.Background()
 	ctx, close := context.WithTimeout(ctx, time.Second*3)
+	//super critic in order to prevent memory leak
 	defer close()
 
 	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
 	resp := mtr.observable.Subscriber(request.CorrelationId.String())
-
-	// <-resp
 	defer mtr.observable.RemoveSitter(request.CorrelationId.String(), resp)
 	select {
 	case result := (<-resp):
 		res = result.response
 
 	case <-ctx.Done():
+		//timeout error maybe return error in the future
 		fmt.Println("ctx timeout")
 	}
-	// }(resp)
 	return res
 
 }
 func (mtr *Mediator[T, K]) Listener() {
-	var test K
+	var zeroValue K
 	for {
 
 		request := (<-mtr.observable.Subscriber(mtr.actionName))
@@ -61,13 +60,9 @@ func (mtr *Mediator[T, K]) Listener() {
 		mtr.action(&p)
 		res := p.Response
 
-		if res != returnZero(test) {
+		if res != returnZero(zeroValue) {
 			mtr.observable.Response(request.CorrelationId.String(), res)
-
 		}
-		// if request.withresponse {
-		// }
-
 	}
 }
 
