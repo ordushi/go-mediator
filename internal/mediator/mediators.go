@@ -63,14 +63,13 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 }
 func (mtr *Mediator[T, K]) Listener() {
 	var zeroValue K
-stop:
 	for {
 		select {
 
 		case <-mtr.cancelationToken:
 			{
 				fmt.Println("Canceled")
-				break stop
+				break
 			}
 		default:
 			{
