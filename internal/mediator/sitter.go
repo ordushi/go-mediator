@@ -6,20 +6,20 @@ import (
 	"github.com/google/uuid"
 )
 
-func (b *Observable[T, K]) AddSitter(e string, ch chan eventMessage[T, K]) {
+func (b *Observable[T, K]) AddSitter(e string, ch *chan eventMessage[T, K]) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 	if b.sitters == nil {
-		b.sitters = make(map[string][]chan eventMessage[T, K])
+		b.sitters = make(map[string][]*chan eventMessage[T, K])
 	}
 	if _, ok := b.sitters[e]; ok {
 		b.sitters[e] = append(b.sitters[e], ch)
 	} else {
-		b.sitters[e] = []chan eventMessage[T, K]{ch}
+		b.sitters[e] = []*chan eventMessage[T, K]{ch}
 	}
 }
 
-func (b *Observable[T, K]) RemoveSitter(e string, ch chan eventMessage[T, K]) {
+func (b *Observable[T, K]) RemoveSitter(e string, ch *chan eventMessage[T, K]) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 	if _, ok := b.sitters[e]; ok {
@@ -31,9 +31,8 @@ func (b *Observable[T, K]) RemoveSitter(e string, ch chan eventMessage[T, K]) {
 		}
 	}
 }
-func (b *Observable[T, K]) RemoveRSitter(correlationId, e string, ch chan eventMessage[T, K]) {
-	defer close(ch)
-
+func (b *Observable[T, K]) RemoveRSitter(correlationId, e string, ch *chan eventMessage[T, K]) {
+	defer close(*ch)
 	b.RemoveSitter(e, ch)
 	b.RemoveSitter(correlationId, ch)
 	delete(b.sitters, correlationId)
@@ -45,7 +44,7 @@ func (b *Observable[T, K]) Emit(e string, request T) {
 		for _, handler := range b.sitters[e] {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- newEventWrapper[T, K](request, false)
-			}(handler)
+			}(*handler)
 		}
 	}
 }
@@ -56,7 +55,7 @@ func (b *Observable[T, K]) Response(e string, request K) {
 		for _, handler := range b.sitters[e] {
 			go func(handler chan eventMessage[T, K], mutex *sync.RWMutex) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
-			}(handler, &b.mutex)
+			}(*handler, &b.mutex)
 		}
 	}
 }
@@ -70,7 +69,7 @@ func (b *Observable[T, K]) EmitWithResponse(e string, request T) eventMessage[T,
 		for _, handler := range b.sitters[e] {
 			go func(handler chan eventMessage[T, K], mutex *sync.RWMutex) {
 				handler <- requestWrp
-			}(handler, &b.mutex)
+			}(*handler, &b.mutex)
 		}
 
 	}

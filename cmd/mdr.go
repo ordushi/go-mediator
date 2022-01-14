@@ -18,8 +18,8 @@ func main() {
 
 	//	y := B{s: ""}
 	a := mediator.New[A, string]()
-	b := mediator.New[B, string]()
-	_ = b.NewMediator("test", test2)
+	//	b := mediator.New[B, string]()
+	//	_ = b.NewMediator("test", test2)
 	mtr := a.NewMediator("test", test)
 	for i := 0; i < 1000; i++ {
 		fmt.Println(
@@ -31,6 +31,7 @@ func main() {
 }
 func test(tt *mediator.MediatePayload[A, string]) {
 	//fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
+	fmt.Print("ack: " + tt.Payload.FirstName + " - ")
 	tt.Response = tt.Payload.FirstName
 }
 

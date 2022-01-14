@@ -23,6 +23,7 @@ type IMediator interface {
 }
 
 func (obs *Observable[T, K]) NewMediator(actionName string, del func(*MediatePayload[T, K])) Mediator[T, K] {
+
 	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
 	mtr.Start()
 
@@ -50,20 +51,28 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
 	resp := mtr.observable.Subscriber(request.CorrelationId.String())
 	defer mtr.observable.RemoveRSitter(request.CorrelationId.String(), mtr.actionName, resp)
-	select {
+	r := make(chan K, 1)
+	go func() {
+		select {
 
-	case result := (<-resp):
-		res = result.response
+		case result := <-*resp:
+			r <- result.response
 
-	case <-ctx.Done():
-		//timeout error maybe return error in the future
-		fmt.Println("ctx timeout")
-	}
+		case <-ctx.Done():
+			var s K = request.response
+			r <- s
+			//timeout error maybe return error in the future
+			fmt.Println("ctx timeout")
+		}
+	}()
+
+	res = <-r
 	return res
 
 }
 func (mtr *Mediator[T, K]) Listener() {
 	var zeroValue K
+	req := mtr.observable.Subscriber(mtr.actionName)
 	for {
 		select {
 		case <-mtr.cancelationToken:
@@ -73,7 +82,9 @@ func (mtr *Mediator[T, K]) Listener() {
 			}
 		default:
 			{
-				request := (<-mtr.observable.Subscriber(mtr.actionName))
+				//defer mtr.observable.RemoveSitter(mtr.actionName, req)
+				//defer close(*req)
+				request := <-*req
 				p := MediatePayload[T, K]{Payload: request.Args}
 				mtr.action(&p)
 				res := p.Response
