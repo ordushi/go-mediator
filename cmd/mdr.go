@@ -18,24 +18,23 @@ func main() {
 
 	//	y := B{s: ""}
 	a := mediator.New[A, string]()
-	//b := mediator.New[B]()
+	b := mediator.New[B, string]()
+	_ = b.NewMediator("test", test2)
 	mtr := a.NewMediator("test", test)
-	i := 1
-	mtr.Stop()
-	fmt.Println(
-		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
-	fmt.Println(
-		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
+	for i := 0; i < 1000; i++ {
+		fmt.Println(
+			mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
+	}
 
-	//time.Sleep(5 * time.Second)
+	fmt.Scanln()
 
 }
 func test(tt *mediator.MediatePayload[A, string]) {
 	//fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
-	tt.Response = "hi?"
+	tt.Response = tt.Payload.FirstName
 }
 
-func test2(tt *mediator.MediatePayload[A, string]) {
+func test2(tt *mediator.MediatePayload[B, string]) {
 	//	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test2")
-	//tt.Response = "hi2?"
+	tt.Response = "hi2?"
 }

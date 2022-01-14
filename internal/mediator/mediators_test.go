@@ -28,4 +28,3 @@ func TestMediator(t *testing.T) {
 	assert.Equal(t, resp, "yay")
 
 }
-

@@ -49,8 +49,9 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 
 	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
 	resp := mtr.observable.Subscriber(request.CorrelationId.String())
-	defer mtr.observable.RemoveSitter(request.CorrelationId.String(), resp)
+	defer mtr.observable.RemoveRSitter(request.CorrelationId.String(), mtr.actionName, resp)
 	select {
+
 	case result := (<-resp):
 		res = result.response
 

@@ -3,7 +3,7 @@
 ```
 poc state
 ```
-- [ ] Context Management
+- [X] Context Management
 - [ ] Prevent Multiple workers on same map
 - [ ] Change maps to Hashmaps?
 - [ ] Refoctor Tkey,TValue usage
