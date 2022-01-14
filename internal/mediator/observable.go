@@ -14,12 +14,11 @@ type Output interface {
 	comparable
 }
 type Observable[T Input, K Output] struct {
-	time     time.Time
-	args     T
-	name     string
-	sitters  map[string][]chan eventMessage[T, K]
-	sitters2 []chan eventMessage[T, K]
-	mutex    sync.RWMutex
+	time    time.Time
+	args    T
+	name    string
+	sitters map[string][]chan eventMessage[T, K]
+	mutex   sync.RWMutex
 }
 type eventMessage[T Input, K Output] struct {
 	withresponse  bool
@@ -33,7 +32,7 @@ func New[T Input, K Output]() Observable[T, K] {
 }
 
 func (obs *Observable[T, K]) Subscriber(action string) chan eventMessage[T, K] {
-	ch := make(chan eventMessage[T, K])
+	ch := make(chan eventMessage[T, K], 1)
 	obs.AddSitter(action, ch)
 	return ch
 
