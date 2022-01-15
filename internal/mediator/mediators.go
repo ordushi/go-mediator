@@ -51,7 +51,7 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
 	resp := mtr.observable.Subscriber(request.CorrelationId.String())
 	defer mtr.observable.RemoveRSitter(request.CorrelationId.String(), mtr.actionName, resp)
-	r := make(chan K, 1)
+	r := make(chan K, 0)
 	go func() {
 		select {
 

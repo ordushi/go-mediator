@@ -41,7 +41,7 @@ func (b *Observable[T, K]) RemoveRSitter(correlationId, e string, ch *chan event
 	defer close(*ch)
 	b.RemoveSitter(e, ch)
 	b.RemoveSitter(correlationId, ch)
-	go b.sitters.Del(correlationId)
+	b.sitters.Del(correlationId)
 	//delete(b.sitters, correlationId)
 
 }

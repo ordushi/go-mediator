@@ -21,8 +21,8 @@ func main() {
 	//	b := mediator.New[B, string]()
 	//	_ = b.NewMediator("test", test2)
 	mtr := a.NewMediator("test", test)
-	mtr2 := a.NewMediator("test", test2)
-	_ = mtr2
+	//	_ := a.NewMediator("test", test2)
+	//	_ = a.NewMediator("test", test2)
 
 	for i := 0; i < 1000; i++ {
 		// go func(mediator.Mediator[A, string], int) {
