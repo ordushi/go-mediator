@@ -13,17 +13,22 @@ func (b *Observable[T, K]) AddSitter(e string, ch *chan eventMessage[T, K]) {
 		b.sitters = &hashmap.HashMap{}
 	}
 	if sitter, ok := b.sitters.Get(e); ok {
-		sitter = append(sitter.([]*chan eventMessage[T, K]), ch)
+		castedSitter := sitter.(*[]*chan eventMessage[T, K])
+		*castedSitter = append(*castedSitter, ch)
+		//b.sitters.Set(e, castedSitter)
+
+		return
 		//b.sitters[e] = append(b.sitters[e], ch)
 	} else {
-		b.sitters.Set(e, []*chan eventMessage[T, K]{ch})
+
+		b.sitters.Set(e, &[]*chan eventMessage[T, K]{ch})
 		//b.sitters[e] = []*chan eventMessage[T, K]{ch}
 	}
 }
 
 func (b *Observable[T, K]) RemoveSitter(e string, ch *chan eventMessage[T, K]) {
 	if sitter, ok := b.sitters.Get(e); ok {
-		castedSitter := sitter.([]*chan eventMessage[T, K])
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
 		for i := range castedSitter {
 			if castedSitter[i] == ch {
 				castedSitter = append(castedSitter[:i], castedSitter[i+1:]...)
@@ -43,7 +48,7 @@ func (b *Observable[T, K]) RemoveRSitter(correlationId, e string, ch *chan event
 
 func (b *Observable[T, K]) Emit(e string, request T) {
 	if sitter, ok := b.sitters.Get(e); ok {
-		castedSitter := sitter.([]*chan eventMessage[T, K])
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
 
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
@@ -54,7 +59,7 @@ func (b *Observable[T, K]) Emit(e string, request T) {
 }
 func (b *Observable[T, K]) Response(e string, request K) {
 	if sitter, ok := b.sitters.Get(e); ok {
-		castedSitter := sitter.([]*chan eventMessage[T, K])
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K], mutex *sync.RWMutex) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
@@ -67,7 +72,7 @@ func (b *Observable[T, K]) EmitWithResponse(e string, request T) eventMessage[T,
 
 	requestWrp := newEventWrapper[T, K](request, true)
 	if sitter, ok := b.sitters.Get(e); ok {
-		castedSitter := sitter.([]*chan eventMessage[T, K])
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
 
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K], mutex *sync.RWMutex) {
