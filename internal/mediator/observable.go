@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cornelk/hashmap"
 	"github.com/google/uuid"
 )
 
@@ -17,8 +18,7 @@ type Observable[T Input, K Output] struct {
 	time       time.Time
 	args       T
 	name       string
-	sitters    map[string][]*chan eventMessage[T, K]
-	sitters2   []chan eventMessage[T, K]
+	sitters    *hashmap.HashMap //map[string][]*chan eventMessage[T, K]
 	responsers []chan eventMessage[T, K]
 	mutex      sync.RWMutex
 }

@@ -21,9 +21,12 @@ func main() {
 	//	b := mediator.New[B, string]()
 	//	_ = b.NewMediator("test", test2)
 	mtr := a.NewMediator("test", test)
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 50000; i++ {
+		// go func(mediator.Mediator[A, string], int) {
 		fmt.Println(
 			mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
+		// }(mtr, i)
+
 	}
 
 	fmt.Scanln()
