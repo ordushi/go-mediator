@@ -3,8 +3,9 @@
 ```
 poc state
 ```
-- [ ] Context Management
-- [ ] Prevent Multiple workers on same map
-- [ ] Change maps to Hashmaps?
+- [X] Context Management
+- [X] Adding Mutex
+- [X] Prevent Multiple workers on same map
+- [ ] find better option then maps, prevent locks..
 - [ ] Refoctor Tkey,TValue usage
 - [ ] craete Typing Singleton mapping 

@@ -1,8 +1,7 @@
 package mediator
 
 import (
-	"context"
-	"log"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +18,7 @@ type Observable[T Input, K Output] struct {
 	args    T
 	name    string
 	sitters map[string][]chan eventMessage[T, K]
+	mutex   sync.RWMutex
 }
 type eventMessage[T Input, K Output] struct {
 	withresponse  bool
@@ -28,14 +28,11 @@ type eventMessage[T Input, K Output] struct {
 }
 
 func New[T Input, K Output]() Observable[T, K] {
-	return Observable[T, K]{time: time.Now()}
+	return Observable[T, K]{time: time.Now(), mutex: sync.RWMutex{}}
 }
-func (obs *Observable[T, K]) Handle(ctx context.Context) {
-	log.Printf("deleting: %+v\n", obs)
 
-}
 func (obs *Observable[T, K]) Subscriber(action string) chan eventMessage[T, K] {
-	ch := make(chan eventMessage[T, K])
+	ch := make(chan eventMessage[T, K], 1)
 	obs.AddSitter(action, ch)
 	return ch
 
