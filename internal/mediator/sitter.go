@@ -1,8 +1,6 @@
 package mediator
 
 import (
-	"sync"
-
 	"github.com/cornelk/hashmap"
 	"github.com/google/uuid"
 )
@@ -38,9 +36,9 @@ func (b *Observable[T, K]) RemoveSitter(e string, ch *chan eventMessage[T, K]) {
 	}
 }
 func (b *Observable[T, K]) RemoveRSitter(correlationId, e string, ch *chan eventMessage[T, K]) {
-	defer close(*ch)
+	//defer close(*ch)
 	b.RemoveSitter(e, ch)
-	b.RemoveSitter(correlationId, ch)
+	//b.RemoveSitter(correlationId, ch)
 	b.sitters.Del(correlationId)
 	//delete(b.sitters, correlationId)
 
@@ -61,24 +59,25 @@ func (b *Observable[T, K]) Response(e string, request K) {
 	if sitter, ok := b.sitters.Get(e); ok {
 		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
 		for _, handler := range castedSitter {
-			go func(handler chan eventMessage[T, K], mutex *sync.RWMutex) {
+			go func(handler chan eventMessage[T, K]) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
-			}(*handler, &b.mutex)
+				defer close(handler)
+				defer b.RemoveSitter(e, &handler)
+			}(*handler)
 		}
 	}
 }
 
-func (b *Observable[T, K]) EmitWithResponse(e string, request T) eventMessage[T, K] {
+func (b *Observable[T, K]) EmitWithResponse(e string, requestWrp eventMessage[T, K]) eventMessage[T, K] {
 
-	requestWrp := newEventWrapper[T, K](request, true)
+	//requestWrp := newEventWrapper[T, K](request, true)
 	if sitter, ok := b.sitters.Get(e); ok {
 		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
-
 		for _, handler := range castedSitter {
-			go func(handler chan eventMessage[T, K], mutex *sync.RWMutex) {
+			go func(handler chan eventMessage[T, K]) {
 				handler <- requestWrp
 
-			}(*handler, &b.mutex)
+			}(*handler)
 		}
 
 	}
