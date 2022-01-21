@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"ezkv.io/go-mediator/internal/mediator"
 )
@@ -19,28 +18,39 @@ func main() {
 
 	//	y := B{s: ""}
 	a := mediator.New[A, string]()
-	//b := mediator.New[B]()
+	//	b := mediator.New[B, string]()
+	//	_ = b.NewMediator("test", test2)
 	mtr := a.NewMediator("test", test)
-	time.Sleep(1 * time.Second)
-	//mtr2 := a.NewMediator("test", test2)
-	//_ = mtr2
-	// go mtr2.Listener()
+	_ = a.NewMediator("test", test2)
+	_ = a.NewMediator("test", test2)
+	_ = a.NewMediator("test", test2)
+	_ = a.NewMediator("test", test2)
+	_ = a.NewMediator("test", test2)
+	_ = a.NewMediator("test", test2)
+	_ = a.NewMediator("test", test2)
 
-	// go mtr.Listener()
-	time.Sleep(1 * time.Second)
-	i := 1
+	for i := 0; i < 10000; i++ {
+		//	go func(mtr mediator.Mediator[A, string], i int) {
+		fmt.Println(
+			mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
+		//}(mtr, i)
 
-	fmt.Println(
-		mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
-	//time.Sleep(5 * time.Second)
+	}
+
+	fmt.Scanln()
 
 }
 func test(tt *mediator.MediatePayload[A, string]) {
 	//fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
-	tt.Response = "hi?"
+	//fmt.Print("ack: " + tt.Payload.FirstName + " - ")
+	tt.Response = tt.Payload.FirstName
 }
 
 func test2(tt *mediator.MediatePayload[A, string]) {
 	//	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test2")
-	//tt.Response = "hi2?"
+	//	fmt.Print("ack2: " + tt.Payload.FirstName + "  ")
+	//	fmt.Print("ack: " + tt.Payload.FirstName + " - ")
+
+	//tt.Response = tt.Payload.FirstName
+
 }

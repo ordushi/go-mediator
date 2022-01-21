@@ -1,56 +1,83 @@
 package mediator
 
-import "github.com/google/uuid"
+import (
+	"github.com/cornelk/hashmap"
+	"github.com/google/uuid"
+)
 
-func (b *Observable[T, K]) AddSitter(e string, ch chan eventMessage[T, K]) {
+func (b *Observable[T, K]) AddSitter(e string, ch *chan eventMessage[T, K]) {
 	if b.sitters == nil {
-		b.sitters = make(map[string][]chan eventMessage[T, K])
+		//	b.sitters = make(map[string][]*chan eventMessage[T, K])
+		b.sitters = &hashmap.HashMap{}
 	}
-	if _, ok := b.sitters[e]; ok {
-		b.sitters[e] = append(b.sitters[e], ch)
+	if sitter, ok := b.sitters.Get(e); ok {
+		castedSitter := sitter.(*[]*chan eventMessage[T, K])
+		*castedSitter = append(*castedSitter, ch)
+		//b.sitters.Set(e, castedSitter)
+
+		return
+		//b.sitters[e] = append(b.sitters[e], ch)
 	} else {
-		b.sitters[e] = []chan eventMessage[T, K]{ch}
+
+		b.sitters.Set(e, &[]*chan eventMessage[T, K]{ch})
+		//b.sitters[e] = []*chan eventMessage[T, K]{ch}
 	}
 }
 
-func (b *Observable[T, K]) RemoveSitter(e string, ch chan eventMessage[T, K]) {
-	if _, ok := b.sitters[e]; ok {
-		for i := range b.sitters[e] {
-			if b.sitters[e][i] == ch {
-				b.sitters[e] = append(b.sitters[e][:i], b.sitters[e][i+1:]...)
+func (b *Observable[T, K]) RemoveSitter(e string, ch *chan eventMessage[T, K]) {
+	if sitter, ok := b.sitters.Get(e); ok {
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
+		for i := range castedSitter {
+			if castedSitter[i] == ch {
+				castedSitter = append(castedSitter[:i], castedSitter[i+1:]...)
 				break
 			}
 		}
 	}
 }
+func (b *Observable[T, K]) RemoveRSitter(correlationId, e string, ch *chan eventMessage[T, K]) {
+	//defer close(*ch)
+	b.RemoveSitter(e, ch)
+	//b.RemoveSitter(correlationId, ch)
+	b.sitters.Del(correlationId)
+	//delete(b.sitters, correlationId)
+
+}
 
 func (b *Observable[T, K]) Emit(e string, request T) {
-	if _, ok := b.sitters[e]; ok {
-		for _, handler := range b.sitters[e] {
+	if sitter, ok := b.sitters.Get(e); ok {
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
+
+		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- newEventWrapper[T, K](request, false)
-			}(handler)
+			}(*handler)
 		}
 	}
 }
 func (b *Observable[T, K]) Response(e string, request K) {
-	if _, ok := b.sitters[e]; ok {
-		for _, handler := range b.sitters[e] {
+	if sitter, ok := b.sitters.Get(e); ok {
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
+		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
-			}(handler)
+				defer close(handler)
+				defer b.RemoveSitter(e, &handler)
+			}(*handler)
 		}
 	}
 }
 
-func (b *Observable[T, K]) EmitWithResponse(e string, request T) eventMessage[T, K] {
+func (b *Observable[T, K]) EmitWithResponse(e string, requestWrp eventMessage[T, K]) eventMessage[T, K] {
 
-	requestWrp := newEventWrapper[T, K](request, true)
-	if _, ok := b.sitters[e]; ok {
-		for _, handler := range b.sitters[e] {
+	//requestWrp := newEventWrapper[T, K](request, true)
+	if sitter, ok := b.sitters.Get(e); ok {
+		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
+		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- requestWrp
-			}(handler)
+
+			}(*handler)
 		}
 
 	}

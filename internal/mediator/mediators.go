@@ -8,9 +8,10 @@ import (
 )
 
 type Mediator[T Input, K Output] struct {
-	action     func(*MediatePayload[T, K])
-	observable *Observable[T, K]
-	actionName string
+	action           func(*MediatePayload[T, K])
+	observable       *Observable[T, K]
+	actionName       string
+	cancelationToken chan bool
 }
 type MediatePayload[T Input, K Output] struct {
 	Payload  T
@@ -22,52 +23,85 @@ type IMediator interface {
 }
 
 func (obs *Observable[T, K]) NewMediator(actionName string, del func(*MediatePayload[T, K])) Mediator[T, K] {
-	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName}
-	go mtr.Listener()
+
+	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
+	mtr.Start()
 
 	return mtr
 
 }
-
+func (mtr *Mediator[T, K]) Start() {
+	go mtr.Listener()
+	//need to create channel to listen to subscribe init
+	time.Sleep(1 * time.Second)
+}
+func (mtr *Mediator[T, K]) Stop() {
+	go func() {
+		mtr.cancelationToken <- true
+	}()
+}
 func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 	// go func(resp chan eventMessage[T, K]) {
+
 	ctx := context.Background()
+	//super critic in order to prevent memory leak
+	wrp := newEventWrapper[T, K](msg, true)
+	resp := *mtr.observable.Subscriber(wrp.CorrelationId.String())
+	request := mtr.observable.EmitWithResponse(mtr.actionName, wrp)
 	ctx, close := context.WithTimeout(ctx, time.Second*3)
+	defer mtr.observable.RemoveRSitter(request.CorrelationId.String(), mtr.actionName, &resp)
 	defer close()
+	r := make(chan K, 0)
+	go func() {
+		select {
 
-	request := mtr.observable.EmitWithResponse(mtr.actionName, msg)
-	resp := mtr.observable.Subscriber(request.CorrelationId.String())
+		case result := <-resp:
 
-	// <-resp
-	defer mtr.observable.RemoveSitter(request.CorrelationId.String(), resp)
-	select {
-	case result := (<-resp):
-		res = result.response
+			r <- result.response
 
-	case <-ctx.Done():
-		fmt.Println("ctx timeout")
-	}
-	// }(resp)
+		case <-ctx.Done():
+			var s K = request.response
+			r <- s
+			//timeout error maybe return error in the future
+			fmt.Println("ctx timeout")
+		}
+	}()
+
+	res = <-r
 	return res
 
 }
+
 func (mtr *Mediator[T, K]) Listener() {
-	var test K
+	//var zeroValue K
+	req := mtr.observable.Subscriber(mtr.actionName)
 	for {
+		select {
+		case <-mtr.cancelationToken:
+			{
+				fmt.Println("Canceled")
+				return
+			}
+		case request := <-*req:
+			{
+				go func() {
 
-		request := (<-mtr.observable.Subscriber(mtr.actionName))
-		p := MediatePayload[T, K]{Payload: request.Args}
+					p := MediatePayload[T, K]{Payload: request.Args}
+					mtr.action(&p)
+					res := p.Response
+					sres := fmt.Sprint(res)
+					if len(sres) > 0 {
+						mtr.observable.Response(request.CorrelationId.String(), res)
+					}
+				}()
+			}
+		default:
+			{
+				//defer mtr.observable.RemoveSitter(mtr.actionName, req)
+				//defer close(*req)
 
-		mtr.action(&p)
-		res := p.Response
-
-		if res != returnZero(test) {
-			mtr.observable.Response(request.CorrelationId.String(), res)
-
+			}
 		}
-		// if request.withresponse {
-		// }
-
 	}
 }
 
