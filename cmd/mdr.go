@@ -29,11 +29,11 @@ func main() {
 	_ = a.NewMediator("test", test2)
 	_ = a.NewMediator("test", test2)
 
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		//	go func(mtr mediator.Mediator[A, string], i int) {
 		fmt.Println(
 			mtr.Mediate(A{LastName: fmt.Sprint(i), FirstName: fmt.Sprint(i)}))
-		//}(mtr, i)
+		//	}(mtr, i)
 
 	}
 

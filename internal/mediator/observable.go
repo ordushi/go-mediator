@@ -11,7 +11,7 @@ type Input interface {
 	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | uintptr | float32 | float64 | string | ~struct{} | interface{}
 }
 type Output interface {
-	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | uintptr | float32 | float64 | string | ~struct{} | interface{}
+	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | uintptr | float32 | float64 | string | ~struct{}
 }
 type Observable[T Input, K Output] struct {
 	time        time.Time

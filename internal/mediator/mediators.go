@@ -33,7 +33,7 @@ func (obs *Observable[T, K]) NewMediator(actionName string, del func(*MediatePay
 func (mtr *Mediator[T, K]) Start() {
 	go mtr.Listener()
 	//need to create channel to listen to subscribe init
-	time.Sleep(1 * time.Second)
+	//time.Sleep(1 * time.Second)
 }
 func (mtr *Mediator[T, K]) Stop() {
 	go func() {
