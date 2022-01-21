@@ -46,7 +46,7 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 	ctx := context.Background()
 	//super critic in order to prevent memory leak
 	wrp := newEventWrapper[T, K](msg, true)
-	resp := *mtr.observable.Subscriber(wrp.CorrelationId.String())
+	resp := *mtr.observable.Subscribe(wrp.CorrelationId.String())
 	request := mtr.observable.EmitWithResponse(mtr.actionName, wrp)
 	ctx, close := context.WithTimeout(ctx, time.Second*3)
 	defer mtr.observable.RemoveRSitter(request.CorrelationId.String(), mtr.actionName, &resp)
@@ -74,7 +74,7 @@ func (mtr *Mediator[T, K]) Mediate(msg T) (res K) {
 
 func (mtr *Mediator[T, K]) Listener() {
 	//var zeroValue K
-	req := mtr.observable.Subscriber(mtr.actionName)
+	req := mtr.observable.Subscribe(mtr.actionName)
 	for {
 		select {
 		case <-mtr.cancelationToken:
@@ -91,7 +91,7 @@ func (mtr *Mediator[T, K]) Listener() {
 					res := p.Response
 					sres := fmt.Sprint(res)
 					if len(sres) > 0 {
-						mtr.observable.Response(request.CorrelationId.String(), res)
+						mtr.observable.EmitResponse(request.CorrelationId.String(), res)
 					}
 				}()
 			}
