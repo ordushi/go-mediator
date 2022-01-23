@@ -19,23 +19,23 @@ type MediatePayload[T Input, K Output] struct {
 }
 type IMediator interface {
 	Mediate()
-	Forfit()
+	Close()
 }
 
 func (obs *Observable[T, K]) NewMediator(actionName string, del func(*MediatePayload[T, K])) Mediator[T, K] {
 
 	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
-	mtr.Start()
+	mtr.start()
 
 	return mtr
 
 }
-func (mtr *Mediator[T, K]) Start() {
+func (mtr *Mediator[T, K]) start() {
 	go mtr.Listener()
 	//need to create channel to listen to subscribe init
 	//time.Sleep(1 * time.Second)
 }
-func (mtr *Mediator[T, K]) Stop() {
+func (mtr *Mediator[T, K]) Close() {
 	go func() {
 		mtr.cancelationToken <- true
 	}()
