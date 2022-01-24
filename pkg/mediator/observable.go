@@ -94,9 +94,8 @@ func (b *Observable[T, K]) EmitResponse(e string, request K) {
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
-				defer b.removeSubscriber(e, &handler)
-				time.Sleep(200 * time.Millisecond)
-				defer close(handler)
+				//defer b.removeSubscriber(e, &handler)
+				//defer close(handler)
 			}(*handler)
 		}
 	}
