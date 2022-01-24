@@ -10,7 +10,7 @@ type mType struct {
 	test string
 }
 
-var mtr Observable[mType, string]
+var mtr *Observable[mType, string]
 var mediator Mediator[mType, string]
 
 func init() {

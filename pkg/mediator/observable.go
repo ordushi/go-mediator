@@ -27,8 +27,8 @@ type eventMessage[T Input, K Output] struct {
 	response      K
 }
 
-func newObservable[T Input, K Output]() Observable[T, K] {
-	return Observable[T, K]{time: time.Now()}
+func newObservable[T Input, K Output]() *Observable[T, K] {
+	return &Observable[T, K]{time: time.Now()}
 }
 
 func (obs *Observable[T, K]) Subscribe(action string) *chan eventMessage[T, K] {
@@ -94,8 +94,9 @@ func (b *Observable[T, K]) EmitResponse(e string, request K) {
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
-				defer close(handler)
 				defer b.removeSubscriber(e, &handler)
+				time.Sleep(200 * time.Millisecond)
+				defer close(handler)
 			}(*handler)
 		}
 	}

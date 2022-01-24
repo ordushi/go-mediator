@@ -24,14 +24,15 @@ type IMediator[T Input, K Output] interface {
 
 func (obs *Observable[T, K]) NewMediator(actionName string) Mediator[T, K] {
 
-	mtr := Mediator[T, K]{actionChan: make(chan func(*MediatePayload[T, K]), 0), observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
+	mtr := Mediator[T, K]{actionChan: make(chan func(*MediatePayload[T, K]), 1), observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
 	mtr.start()
 
 	return mtr
 
 }
 func (mtr *Mediator[T, K]) AddOrUpdateCallback(del func(*MediatePayload[T, K])) {
-	mtr.actionChan <- del
+	mtr.observable.action = del
+	//mtr.actionChan <- del
 }
 
 //del func(*MediatePayload[T, K]
@@ -87,7 +88,10 @@ func (mtr *Mediator[T, K]) listener() {
 				fmt.Println("Canceled")
 				return
 			}
-		case mtr.observable.action = <-mtr.actionChan:
+		// case actions := <-mtr.actionChan:
+		// 	{
+		// 		mtr.observable.action = actions
+		// 	}
 
 		case request := <-*req:
 			{

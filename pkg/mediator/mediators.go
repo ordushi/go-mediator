@@ -6,7 +6,7 @@ import (
 
 var sngl map[reflect.Type]interface{} = make(map[reflect.Type]interface{})
 
-func CreateOrGet[T any, K any]() Observable[T, K] {
+func CreateOrGet[T any, K any]() *Observable[T, K] {
 	var t T
 	x := reflect.TypeOf(t)
 	var val interface{}
@@ -17,7 +17,7 @@ func CreateOrGet[T any, K any]() Observable[T, K] {
 		return obs
 
 	}
-	return val.(Observable[T, K])
+	return val.(*Observable[T, K])
 
 }
 func Remove[T any]() {
