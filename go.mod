@@ -1,4 +1,4 @@
-module ezkv.io/go-mediator
+module github.com/ezkv/go-mediator
 
 go 1.18
 
