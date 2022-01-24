@@ -26,7 +26,7 @@ type eventMessage[T Input, K Output] struct {
 	response      K
 }
 
-func New[T Input, K Output]() Observable[T, K] {
+func newObservable[T Input, K Output]() Observable[T, K] {
 	return Observable[T, K]{time: time.Now()}
 }
 
@@ -102,7 +102,7 @@ func (b *Observable[T, K]) EmitResponse(e string, request K) {
 
 func (b *Observable[T, K]) EmitWithResponse(e string, requestWrp eventMessage[T, K]) eventMessage[T, K] {
 
-	//requestWrp := newEventWrapper[T, K](request, true)
+	//requestWrp := newObservableEventWrapper[T, K](request, true)
 	if sitter, ok := b.subscribers.Get(e); ok {
 		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
 		for _, handler := range castedSitter {

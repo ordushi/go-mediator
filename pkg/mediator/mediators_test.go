@@ -17,7 +17,7 @@ func init() {
 	x := func(mp *MediatePayload[mType, string]) {
 		mp.Response = "yay"
 	}
-	mtr = New[mType, string]()
+	mtr = newObservable[mType, string]()
 	mediator = mtr.NewMediator("add", x)
 
 }

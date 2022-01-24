@@ -12,7 +12,7 @@ func CreateOrGet[T any, K any]() Observable[T, K] {
 	var val interface{}
 	ok := false
 	if val, ok = sngl[x]; !ok {
-		obs := New[T, K]()
+		obs := newObservable[T, K]()
 		sngl[x] = obs
 		return obs
 
