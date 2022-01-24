@@ -9,7 +9,6 @@ import (
 
 type Mediator[T Input, K Output] struct {
 	actionChan       chan func(*MediatePayload[T, K])
-	action           func(*MediatePayload[T, K])
 	observable       *Observable[T, K]
 	actionName       string
 	cancelationToken chan bool
@@ -25,7 +24,7 @@ type IMediator[T Input, K Output] interface {
 
 func (obs *Observable[T, K]) NewMediator(actionName string) Mediator[T, K] {
 
-	mtr := Mediator[T, K]{actionChan: make(chan func(*MediatePayload[T, K]), 0), action: nil, observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
+	mtr := Mediator[T, K]{actionChan: make(chan func(*MediatePayload[T, K]), 0), observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
 	mtr.start()
 
 	return mtr
@@ -88,7 +87,7 @@ func (mtr *Mediator[T, K]) listener() {
 				fmt.Println("Canceled")
 				return
 			}
-		case mtr.action = <-mtr.actionChan:
+		case mtr.observable.action = <-mtr.actionChan:
 
 		case request := <-*req:
 			{
@@ -96,8 +95,8 @@ func (mtr *Mediator[T, K]) listener() {
 
 					p := MediatePayload[T, K]{Payload: request.Args}
 
-					if mtr.action != nil {
-						mtr.action(&p)
+					if mtr.observable.action != nil {
+						mtr.observable.action(&p)
 					}
 
 					res := p.Response

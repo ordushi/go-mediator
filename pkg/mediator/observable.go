@@ -17,6 +17,7 @@ type Observable[T Input, K Output] struct {
 	time        time.Time
 	args        T
 	name        string
+	action      func(*MediatePayload[T, K])
 	subscribers *hashmap.HashMap //map[string][]*chan eventMessage[T, K]
 }
 type eventMessage[T Input, K Output] struct {
