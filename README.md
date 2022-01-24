@@ -1,7 +1,7 @@
 # go-mediator
 
 ```
-poc state
+poc states
 ```
 - [X] Context Management
 - [X] Adding Mutex
