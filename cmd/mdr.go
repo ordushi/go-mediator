@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	m "github.com/ezkv/gomediator/internal/mediator"
-	"github.com/ezkv/gomediator/pkg/mediator"
+	m "github.com/ezkv/go-mediator/internal/mediator"
+	"github.com/ezkv/go-mediator/pkg/mediator"
 )
 
 type A struct {
