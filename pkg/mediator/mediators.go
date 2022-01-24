@@ -3,7 +3,7 @@ package mediator
 import (
 	"reflect"
 
-	"github.com/ezkv/go-mediator/internal/mediator"
+	"github.com/ezkv/gomediator/internal/mediator"
 )
 
 var sngl map[reflect.Type]interface{} = make(map[reflect.Type]interface{})
