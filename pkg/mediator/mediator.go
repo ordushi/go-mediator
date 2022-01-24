@@ -8,6 +8,7 @@ import (
 )
 
 type Mediator[T Input, K Output] struct {
+	actionChan       chan func(*MediatePayload[T, K])
 	action           func(*MediatePayload[T, K])
 	observable       *Observable[T, K]
 	actionName       string
@@ -22,14 +23,19 @@ type IMediator[T Input, K Output] interface {
 	Close()
 }
 
-func (obs *Observable[T, K]) NewMediator(actionName string, del func(*MediatePayload[T, K])) Mediator[T, K] {
+func (obs *Observable[T, K]) NewMediator(actionName string) Mediator[T, K] {
 
-	mtr := Mediator[T, K]{action: del, observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
+	mtr := Mediator[T, K]{actionChan: make(chan func(*MediatePayload[T, K]), 0), action: nil, observable: obs, actionName: actionName, cancelationToken: make(chan bool)}
 	mtr.start()
 
 	return mtr
 
 }
+func (mtr *Mediator[T, K]) AddOrUpdateCallback(del func(*MediatePayload[T, K])) {
+	mtr.actionChan <- del
+}
+
+//del func(*MediatePayload[T, K]
 func (mtr *Mediator[T, K]) start() {
 	go mtr.listener()
 	//need to create channel to listen to subscribe init
@@ -82,12 +88,18 @@ func (mtr *Mediator[T, K]) listener() {
 				fmt.Println("Canceled")
 				return
 			}
+		case mtr.action = <-mtr.actionChan:
+
 		case request := <-*req:
 			{
 				go func() {
 
 					p := MediatePayload[T, K]{Payload: request.Args}
-					mtr.action(&p)
+
+					if mtr.action != nil {
+						mtr.action(&p)
+					}
+
 					res := p.Response
 					sres := fmt.Sprint(res)
 					if len(sres) > 0 {

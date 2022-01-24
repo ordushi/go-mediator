@@ -18,7 +18,8 @@ func init() {
 		mp.Response = "yay"
 	}
 	mtr = newObservable[mType, string]()
-	mediator = mtr.NewMediator("add", x)
+	mediator = mtr.NewMediator("add")
+	mediator.AddOrUpdateCallback(x)
 
 }
 
@@ -29,7 +30,8 @@ func TestMediator(t *testing.T) {
 	}
 	// need to create locker for obs and subscribers
 	//time.Sleep(1 * time.Second)
-	mediator := mtr.NewMediator("add", x)
+	mediator := mtr.NewMediator("add")
+	mediator.AddOrUpdateCallback(x)
 
 	resp := mediator.Mediate(mType{test: "test?"})
 	assert.Equal(t, resp, "yay")

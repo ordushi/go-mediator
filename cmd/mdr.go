@@ -20,8 +20,10 @@ func main() {
 	y := mediator.CreateOrGet[A, string]()
 	_ = mediator.CreateOrGet[B, string]()
 
-	mtr := x.NewMediator("test", test)
-	mtr2 := y.NewMediator("test", test)
+	mtr := x.NewMediator("test")
+	mtr.AddOrUpdateCallback(test)
+	mtr2 := y.NewMediator("test")
+	mtr2.AddOrUpdateCallback(test)
 	// a := mediator.New[A, string]()
 	// mtr := a.NewMediator("test", test)
 	// _ = a.NewMediator("test", test2)
@@ -39,6 +41,7 @@ func main() {
 		fmt.Println(
 			mtr2.Mediate(A{FirstName: "mt2: " + fmt.Sprint(i), LastName: fmt.Sprint(i)}))
 		//	}(mtr, i)
+		mtr.AddOrUpdateCallback(test2)
 
 	}
 
@@ -55,6 +58,7 @@ func test2(tt *mediator.MediatePayload[A, string]) {
 	//	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test2")
 	//	fmt.Print("ack2: " + tt.Payload.FirstName + "  ")
 	//	fmt.Print("ack: " + tt.Payload.FirstName + " - ")
+	tt.Response = tt.Payload.FirstName + "AC"
 
 	//tt.Response = tt.Payload.FirstName
 
