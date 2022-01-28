@@ -18,8 +18,9 @@ type MediatePayload[T Input, K Output] struct {
 	Response K
 }
 type IMediator[T Input, K Output] interface {
-	MediateMediate(msg T) (res K)
+	Mediate(msg T) (res K)
 	Close()
+	Mediator(*MediatePayload[T, K])
 }
 
 func (obs *Observable[T, K]) NewMediator(actionName string) Mediator[T, K] {
@@ -101,7 +102,7 @@ func (mtr *Mediator[T, K]) listener() {
 					p := MediatePayload[T, K]{Payload: request.Args}
 					del := mtr.observable.getCallBack(mtr.actionName)
 					if del != nil {
-						for _, act := range del {
+						for _, act := range *del {
 							act(&p)
 						}
 					}
