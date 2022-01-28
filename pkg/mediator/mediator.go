@@ -31,7 +31,8 @@ func (obs *Observable[T, K]) NewMediator(actionName string) Mediator[T, K] {
 
 }
 func (mtr *Mediator[T, K]) AddOrUpdateCallback(del func(*MediatePayload[T, K])) {
-	mtr.observable.action = del
+	mtr.observable.addCallback(mtr.actionName, del)
+	//mtr.observable.action = del
 	//mtr.actionChan <- del
 }
 
@@ -98,15 +99,22 @@ func (mtr *Mediator[T, K]) listener() {
 				go func() {
 
 					p := MediatePayload[T, K]{Payload: request.Args}
-
-					if mtr.observable.action != nil {
-						mtr.observable.action(&p)
+					del := mtr.observable.getCallBack(mtr.actionName)
+					if del != nil {
+						for _, act := range del {
+							act(&p)
+						}
 					}
+
+					// if mtr.observable.action != nil {
+					// 	mtr.observable.action(&p)
+					// }
 
 					res := p.Response
 					sres := fmt.Sprint(res)
 					if len(sres) > 0 {
 						mtr.observable.EmitResponse(request.CorrelationId.String(), res)
+						//	defer mtr.observable.removeSubscriber(request.CorrelationId.String(),req)
 					}
 				}()
 			}
@@ -126,4 +134,8 @@ func getType(myvar interface{}) string {
 	} else {
 		return t.Name()
 	}
+}
+func (mtr *Mediator[T, K]) actionHandler(p *MediatePayload[T, K]) {
+	fmt.Println(p)
+
 }
