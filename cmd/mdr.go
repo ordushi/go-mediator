@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ezkv/go-mediator/pkg/mediator"
+	"github.com/ordushi/go-mediator/pkg/mediator"
 )
 
 type A struct {
