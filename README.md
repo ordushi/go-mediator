@@ -6,6 +6,8 @@ poc states
 - [X] Context Management
 - [X] Adding Mutex
 - [X] Prevent Multiple workers on same map
+- [X] create Typing Singleton mapping 
 - [ ] find better option then maps, prevent locks..
+- [ ] more test coverage
 - [ ] Refoctor Tkey,TValue usage
-- [ ] craete Typing Singleton mapping 
+- [ ] Try implementing "Raft Consensus Algorithm" to support cluster event source

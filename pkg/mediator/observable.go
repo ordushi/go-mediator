@@ -18,7 +18,6 @@ type Observable[T Input, K Output] struct {
 	args        T
 	name        string
 	actions     *hashmap.HashMap
-	action      []func(*MediatePayload[T, K])
 	subscribers *hashmap.HashMap //map[string][]*chan eventMessage[T, K]
 }
 type eventMessage[T Input, K Output] struct {
@@ -47,17 +46,17 @@ func (b *Observable[T, K]) addCallback(mtrId string, del func(*MediatePayload[T,
 		b.actions = &hashmap.HashMap{}
 	}
 	if act, ok := b.actions.Get(mtrId); ok {
-		castedact := act.([]func(*MediatePayload[T, K]))
-		act = append(castedact, del)
+		castedact := act.(*[]func(*MediatePayload[T, K]))
+		*castedact = append(*castedact, del)
 		return
 	} else {
-		b.actions.Set(mtrId, []func(*MediatePayload[T, K]){del})
+		b.actions.Set(mtrId, &[]func(*MediatePayload[T, K]){del})
 	}
 
 }
-func (b *Observable[T, K]) getCallBack(mtrId string) []func(*MediatePayload[T, K]) {
+func (b *Observable[T, K]) getCallBack(mtrId string) *[]func(*MediatePayload[T, K]) {
 	if act, ok := b.actions.Get(mtrId); ok {
-		return act.([]func(*MediatePayload[T, K]))
+		return act.(*[]func(*MediatePayload[T, K]))
 	}
 	return nil
 }
@@ -111,7 +110,6 @@ func (b *Observable[T, K]) Emit(e string, request T) {
 func (b *Observable[T, K]) EmitResponse(e string, request K) {
 	if sitter, ok := b.subscribers.Get(e); ok {
 		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
-		println(len(castedSitter))
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- eventMessage[T, K]{withresponse: false, response: request}
@@ -127,7 +125,6 @@ func (b *Observable[T, K]) EmitWithResponse(e string, requestWrp eventMessage[T,
 	//requestWrp := newObservableEventWrapper[T, K](request, true)
 	if sitter, ok := b.subscribers.Get(e); ok {
 		castedSitter := *sitter.(*[]*chan eventMessage[T, K])
-		println(len(castedSitter))
 		for _, handler := range castedSitter {
 			go func(handler chan eventMessage[T, K]) {
 				handler <- requestWrp

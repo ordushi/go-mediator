@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ezkv/go-mediator/pkg/mediator"
+	"github.com/ordushi/go-mediator/pkg/mediator"
 )
 
 type A struct {
@@ -19,11 +19,12 @@ func main() {
 	x := mediator.CreateOrGet[A, string]()
 	y := mediator.CreateOrGet[A, string]()
 	_ = mediator.CreateOrGet[B, string]()
-
 	mtr := x.NewMediator("test")
 	//	mtr.AddOrUpdateCallback(test)
 	mtr.AddOrUpdateCallback(test)
+
 	mtr2 := y.NewMediator("test")
+	mtr2.AddOrUpdateCallback(test2)
 	// a := mediator.New[A, string]()
 	// mtr := a.NewMediator("test", test)
 	// _ = a.NewMediator("test", test2)
@@ -48,6 +49,7 @@ func main() {
 	// fmt.Scanln()
 
 }
+
 func test(tt *mediator.MediatePayload[A, string]) {
 	//fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test1")
 	//fmt.Print("ack: " + tt.Payload.FirstName + " - ")
@@ -58,7 +60,7 @@ func test2(tt *mediator.MediatePayload[A, string]) {
 	//	fmt.Printf(" %s from  - %s", tt.Payload.FirstName, "test2")
 	//	fmt.Print("ack2: " + tt.Payload.FirstName + "  ")
 	//	fmt.Print("ack: " + tt.Payload.FirstName + " - ")
-	tt.Response = tt.Payload.FirstName + "AC"
+	//	tt.Response = tt.Payload.FirstName + "AC"
 
 	//tt.Response = tt.Payload.FirstName
 
